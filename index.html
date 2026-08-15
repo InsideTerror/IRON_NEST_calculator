@@ -1,0 +1,268 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#263d31">
+  <meta name="description" content="Standalone dieselpunk artillery firing calculator for IRON NEST.">
+  <title>IRON NEST // Firing Computer</title>
+  <style>
+    :root{--bg:#101510;--panel:#17221a;--panel2:#1c2b21;--green:#789b7d;--bright:#b9d0b4;--muted:#607b65;--line:#3c5a43;--red:#9e2e2e;--red2:#c33d35;--paper:#d2dbc9;--black:#0b0f0c}
+    *{box-sizing:border-box}
+    html,body,#app{margin:0;min-height:100%;background:var(--bg);color:var(--bright);font-family:"Roboto Mono","Courier New",monospace}
+    body{min-height:100vh}
+    button,input,select{font:inherit}
+    .screen{min-height:100vh;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 20%,#1b2a20 0,#101510 55%);padding:42px 6vw 28px}
+    .scanlines{position:absolute;inset:0;pointer-events:none;opacity:.09;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,#b9d0b4 4px);mix-blend-mode:screen}
+    .masthead,.result-head{position:relative;display:flex;align-items:center;gap:25px;max-width:1100px;margin:0 auto 34px}
+    .crest{border:2px solid var(--green);padding:9px 12px;line-height:.83;font-weight:700;letter-spacing:2px;font-size:22px;box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 5px var(--green)}
+    .crest span{font-size:15px}.eyebrow{font-size:12px;color:var(--muted);letter-spacing:2px}
+    .masthead h1,.result-head h1{font-family:"Share Tech Mono","Courier New",monospace;letter-spacing:5px;margin:3px 0;font-size:38px;color:var(--paper)}
+    .masthead p{font-size:11px;color:var(--muted);margin:0}
+    .status{margin-left:auto;font-size:11px;border:1px solid var(--line);padding:9px 12px;white-space:nowrap}.status i{display:inline-block;width:8px;height:8px;background:#8ba889;border-radius:50%;margin-right:8px;box-shadow:0 0 8px #8ba889}
+    .panel,.data-card{position:relative;max-width:1100px;margin:auto;border:1px solid var(--line);background:rgba(23,34,26,.92);box-shadow:0 16px 50px #0008}
+    .panel-title{font-size:12px;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--line);padding:14px 18px}.panel-title span{color:var(--bright);margin-right:12px}
+    .input-panel{padding-bottom:30px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;padding:30px}.grid label{display:flex;flex-direction:column;gap:9px}.grid label>span{font-size:12px;color:var(--bright);letter-spacing:1px}.grid em{font-style:normal;color:var(--muted);font-size:9px}.grid small{font-size:9px;color:var(--muted);line-height:1.5}
+    .input-wrap{display:flex;border:1px solid var(--line);background:#0d120f}.input-wrap b{padding:16px 14px;color:var(--muted);font-size:13px;border-left:1px solid var(--line)}
+    input,select{width:100%;background:#0d120f;border:1px solid var(--line);color:var(--paper);padding:15px;font:16px "Roboto Mono","Courier New",monospace;outline:none;border-radius:0}.input-wrap input{border:0}.input-wrap:focus-within,select:focus,input:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}select{appearance:auto}
+    .charge-readout{margin:0 30px 26px;border:1px dashed var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;background:#111812}.charge-readout>div{padding:15px 18px;border-right:1px solid var(--line)}.charge-readout>div:last-child{border:0}.charge-readout span{display:block;font-size:9px;color:var(--muted);margin-bottom:7px}.charge-readout strong{font-size:20px}.charge-readout .hint{font-size:9px;color:var(--muted);line-height:1.6}
+    .calculate{display:flex;justify-content:space-between;align-items:center;margin:0 30px;width:calc(100% - 60px);padding:18px 22px;background:linear-gradient(#b43b35,#862622);border:2px solid #d15b51;color:#f1d8cc;font:700 20px "Share Tech Mono","Courier New",monospace;letter-spacing:5px;cursor:pointer;box-shadow:0 6px 0 #4d1716,0 0 25px #9e2e2e55}.calculate:active{transform:translateY(4px);box-shadow:0 2px 0 #4d1716}
+    .error{min-height:20px;margin:12px 30px 0;color:#d86b62;font-size:10px}
+    .screen footer{position:relative;text-align:center;margin-top:30px;color:#415544;font-size:9px;letter-spacing:2px}.screen footer span{margin:0 10px}
+    .result-screen{padding-top:34px}.result-head{margin-bottom:24px}.result-head h1{font-size:32px}
+    .solution-card{position:relative;max-width:900px;margin:15px auto 25px;text-align:center;border:1px solid var(--line);padding:38px 30px;background:linear-gradient(180deg,#1b2a20,#111812);box-shadow:0 20px 70px #0009}.solution-label{font-size:12px;letter-spacing:4px;color:var(--muted)}.angle{font-family:"Share Tech Mono","Courier New",monospace;font-size:130px;line-height:1;color:var(--paper);margin:14px 0;text-shadow:0 0 25px #91ad8b22}.angle small{font-size:24px;color:var(--muted);vertical-align:bottom}.rule{height:1px;background:var(--line);margin:12px 0 16px}.formula{font-size:10px;color:var(--muted);letter-spacing:1px}.formula b{color:var(--bright)}
+    .data-card{max-width:900px}.data-grid{display:grid;grid-template-columns:1fr 1fr;padding:10px 20px 20px}.data-grid>div{padding:18px;border-bottom:1px solid #2c4131}.data-grid span{display:block;font-size:9px;color:var(--muted);margin-bottom:7px}.data-grid strong{font-size:17px;color:var(--paper)}.data-grid small{display:block;color:var(--muted);font-size:9px;margin-top:5px}.data-grid .wide{grid-column:1/-1}
+    .warning{max-width:900px;margin:18px auto 0;border:1px solid #6e4b38;color:#c49a77;background:#2b2119;padding:12px;font-size:10px;text-align:center;letter-spacing:1px}
+    .result-actions{position:absolute;right:6vw;top:30px;z-index:3;display:flex;gap:6px}.result-actions button{background:#17221a;border:1px solid var(--line);color:var(--bright);padding:8px 10px;font:9px "Roboto Mono","Courier New",monospace;cursor:pointer}.result-actions button:hover{background:#24352a}.hidden{display:none}.live{border-color:#527258}.result-screen footer{margin-top:24px}
+    .fade-in{animation:fadeIn .75s ease both}@keyframes fadeIn{from{opacity:0;filter:blur(4px);transform:scale(1.01)}to{opacity:1;filter:none;transform:none}}
+    @media(max-width:700px){.screen{padding:22px 16px 20px}.masthead,.result-head{align-items:flex-start;gap:12px;flex-wrap:wrap}.masthead h1,.result-head h1{font-size:26px;letter-spacing:3px}.status{margin-left:0}.grid,.data-grid{grid-template-columns:1fr;padding:20px}.charge-readout{margin:0 20px 20px;grid-template-columns:1fr 1fr}.charge-readout .hint{grid-column:1/-1;border-top:1px solid var(--line);border-right:0}.calculate{margin:0 20px;width:calc(100% - 40px)}.angle{font-size:75px}.solution-card{padding:30px 15px}.result-actions{right:16px;top:15px;flex-direction:column}.result-head{padding-top:90px}.data-grid .wide{grid-column:auto}}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    // IRON NEST FIRING COMPUTER - standalone version.
+    // No build step or external JavaScript is required.
+    const SHELLS = [
+      ['EMPT','Empty'],['AP','Armour Piercing shell'],['APHE','Armour Piercing High Explosive'],['ATMC','Atomic'],
+      ['CLMN','High Explosive Scattering Bomb Shell'],['CYAN','Cyanogen Gas Bomb Shell'],['DRIL','Concrete Filled Dummy Shell'],
+      ['EQKE','Earthquake Shell'],['FLCH','Flechette Shell'],['HCHE','High Capacity High Explosive Shell'],['HE','High Explosive Shell'],
+      ['INCN','Incendiary Shell'],['LE','Low Grade Low Energy Shell'],['PCLM','Parachute Delayed Cluster Land Mine shells'],
+      ['PHGN','Phosphorus Grenade Shell'],['PRPG','Propaganda Shell'],['SMK','Smoke Shell'],['STAR','Parachute Deployed Illumination shell'],
+      ['TEAR','Chloroacetophenone Gas Shell'],['THRM','Thermal Shell'],['WP','White Phosphorus Shell']
+    ];
+
+    let lastResult = null;
+    let revealTimer = null;
+
+    function calculateElevation(distance) {
+      if (!Number.isFinite(distance) || distance < 0 || distance > 30) {
+        throw new Error('Range must be between 0 and 30 km.');
+      }
+      if (distance === 0) return { charges: 1, elevation: 0, band: '0–5 KM' };
+
+      const charges = Math.ceil(distance / 5);
+      const starts = [0, 5, 10, 15, 20, 25];
+      const base   = [0, 30, 40, 45, 48, 50];
+      const slope  = [12, 6, 4, 3, 2.4, 2];
+      const i = Math.min(charges, 6) - 1;
+      const elevation = base[i] + (distance - starts[i]) * slope[i];
+      return { charges, elevation, band: `${starts[i]}–${starts[i] + 5} KM` };
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'
+      }[c]));
+    }
+
+    function shellOptions() {
+      return SHELLS.map(([code, full]) => `<option value="${code}">${code} — ${full}</option>`).join('');
+    }
+
+    function renderForm() {
+      clearTimeout(revealTimer);
+      document.querySelector('#app').innerHTML = `
+        <main class="screen input-screen">
+          <div class="scanlines"></div>
+          <header class="masthead">
+            <div class="crest">IRON<br><span>NEST</span></div>
+            <div>
+              <div class="eyebrow">ARTILLERY CONTROL SYSTEM // FIELD MODEL</div>
+              <h1>FIRING COMPUTER</h1>
+              <p>MARK IV — POWDER CHARGE / ELEVATION SOLUTION</p>
+            </div>
+            <div class="status"><i></i> SYSTEM READY</div>
+          </header>
+
+          <section class="panel input-panel">
+            <div class="panel-title"><span>01</span> TARGET DATA</div>
+            <div class="grid">
+              <label>
+                <span>DISTANCE TO TARGET</span>
+                <div class="input-wrap"><input id="distance" type="number" min="0" max="30" step="0.01" placeholder="12.31" inputmode="decimal"><b>KM</b></div>
+                <small>DECIMAL RANGE // 0.00 — 30.00 KM</small>
+              </label>
+              <label>
+                <span>BEARING TO TARGET <em>OPTIONAL</em></span>
+                <div class="input-wrap"><input id="bearing" type="number" min="0" max="360" step="0.1" placeholder="157.4" inputmode="decimal"><b>°</b></div>
+                <small>0° — 360° // DOES NOT AFFECT ELEVATION</small>
+              </label>
+              <label>
+                <span>ORDINANCE TYPE <em>NON-CALCULATING</em></span>
+                <select id="shell">${shellOptions()}</select>
+                <small>SHELL SELECTION HAS NO EFFECT ON TABLE SOLUTION</small>
+              </label>
+              <label>
+                <span>TYPE OF TARGET</span>
+                <input id="target" type="text" maxlength="60" placeholder="e.g. armoured bunker" autocomplete="off">
+                <small>TACTICAL IDENTIFIER // FREE TEXT</small>
+              </label>
+            </div>
+
+            <div class="charge-readout">
+              <div><span>REQUIRED POWDER CHARGES</span><strong id="charges">—</strong></div>
+              <div><span>TABLE BAND</span><strong id="band">—</strong></div>
+              <div class="hint">AUTOMATICALLY SELECTED<br>ONE CHARGE / 5 KM — ROUND UP</div>
+            </div>
+
+            <button class="calculate" id="calculate" type="button"><span>CALCULATE</span><b>▶</b></button>
+            <div class="error" id="error" aria-live="polite"></div>
+          </section>
+          <footer>IRON NEST FIELD EQUIPMENT DIVISION <span>//</span> FIRE CONTROL UNIT</footer>
+        </main>`;
+
+      const distance = document.querySelector('#distance');
+      const charges = document.querySelector('#charges');
+      const band = document.querySelector('#band');
+      distance.addEventListener('input', () => {
+        const d = Number(distance.value);
+        if (Number.isFinite(d) && d >= 0 && d <= 30 && distance.value !== '') {
+          const r = calculateElevation(d);
+          charges.textContent = r.charges;
+          band.textContent = r.band;
+        } else {
+          charges.textContent = '—';
+          band.textContent = '—';
+        }
+      });
+      document.querySelector('#calculate').addEventListener('click', calculate);
+    }
+
+    function calculate() {
+      const d = Number(document.querySelector('#distance').value);
+      const error = document.querySelector('#error');
+      if (document.querySelector('#distance').value === '' || !Number.isFinite(d) || d < 0 || d > 30) {
+        error.textContent = 'ERROR // ENTER A DISTANCE BETWEEN 0.00 AND 30.00 KM.';
+        return;
+      }
+
+      const bRaw = document.querySelector('#bearing').value;
+      let bearing = '—';
+      if (bRaw !== '') {
+        const b = Number(bRaw);
+        if (!Number.isFinite(b)) {
+          error.textContent = 'ERROR // BEARING MUST BE A NUMBER.';
+          return;
+        }
+        bearing = `${((((b % 360) + 360) % 360).toFixed(1))}°`;
+      }
+
+      const shellCode = document.querySelector('#shell').value;
+      const shellName = SHELLS.find(s => s[0] === shellCode)?.[1] ?? shellCode;
+      const target = document.querySelector('#target').value.trim() || 'UNSPECIFIED';
+      const result = calculateElevation(d);
+      lastResult = { distance:d, bearing, shellCode, shellName, target, ...result };
+      renderResult(lastResult);
+    }
+
+    function renderResult(r) {
+      clearTimeout(revealTimer);
+      document.querySelector('#app').innerHTML = `
+        <main class="screen result-screen fade-in">
+          <div class="scanlines"></div>
+          <div class="result-actions hidden" id="actions">
+            <button id="reset" type="button">RESET</button>
+            <button id="back" type="button">◀ BACK</button>
+            <button id="save" type="button">SAVE IMAGE</button>
+          </div>
+          <header class="result-head">
+            <div class="crest">IRON<br><span>NEST</span></div>
+            <div><div class="eyebrow">FIRE CONTROL OUTPUT // VERIFIED</div><h1>FIRING SOLUTION</h1></div>
+            <div class="status live"><i></i> SOLUTION LOCKED</div>
+          </header>
+          <section class="solution-card">
+            <div class="solution-label">GUN ELEVATION</div>
+            <div class="angle"><span id="angleValue">0.00</span><small>DEG</small></div>
+            <div class="rule"></div>
+            <div class="formula">TABLE BAND <b>${escapeHtml(r.band)}</b> // ${r.charges} POWDER CHARGE${r.charges === 1 ? '' : 'S'}</div>
+          </section>
+          <section class="data-card">
+            <div class="panel-title"><span>02</span> FIRING DATA</div>
+            <div class="data-grid">
+              <div><span>DISTANCE</span><strong>${r.distance.toFixed(2)} KM</strong></div>
+              <div><span>POWDER CHARGES</span><strong>${r.charges}</strong></div>
+              <div><span>BEARING</span><strong>${escapeHtml(r.bearing)}</strong></div>
+              <div><span>ORDINANCE</span><strong>${escapeHtml(r.shellCode)}</strong><small>${escapeHtml(r.shellName)}</small></div>
+              <div class="wide"><span>TARGET</span><strong>${escapeHtml(r.target)}</strong></div>
+            </div>
+          </section>
+          <div class="warning">⚠ VERIFY BEARING, CHARGE COUNT AND TARGET IDENTIFICATION BEFORE FIRING.</div>
+          <footer>IRON NEST FIELD EQUIPMENT DIVISION <span>//</span> FIRE CONTROL UNIT</footer>
+        </main>`;
+
+      const angleValue = document.querySelector('#angleValue');
+      const target = r.elevation;
+      const start = performance.now();
+      const duration = 850;
+      function animate(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        angleValue.textContent = (target * eased).toFixed(2);
+        if (t < 1) requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+
+      revealTimer = setTimeout(() => document.querySelector('#actions')?.classList.remove('hidden'), 10000);
+      document.querySelector('#reset').addEventListener('click', renderForm);
+      document.querySelector('#back').addEventListener('click', renderForm);
+      document.querySelector('#save').addEventListener('click', saveResultImage);
+    }
+
+    function saveResultImage() {
+      const r = lastResult;
+      if (!r) return;
+      const scale = 2, w = 1200, h = 900;
+      const c = document.createElement('canvas');
+      c.width = w * scale; c.height = h * scale;
+      const x = c.getContext('2d');
+      x.scale(scale, scale);
+      x.fillStyle = '#111713'; x.fillRect(0,0,w,h);
+      x.strokeStyle = '#4f735b'; x.lineWidth = 3; x.strokeRect(28,28,w-56,h-56);
+      x.fillStyle = '#b9d0b4'; x.font = 'bold 32px monospace'; x.fillText('IRON NEST // FIRING COMPUTER',70,85);
+      x.fillStyle = '#7eaa88'; x.font = '18px monospace'; x.fillText('FIRING SOLUTION // VERIFIED',70,120);
+      x.fillStyle = '#d8e5d2'; x.font = 'bold 100px monospace'; x.fillText(`${r.elevation.toFixed(2)}°`,70,270);
+      x.fillStyle = '#7eaa88'; x.font = '20px monospace'; x.fillText('GUN ELEVATION',75,310);
+      x.strokeStyle = '#4f735b'; x.beginPath(); x.moveTo(70,345); x.lineTo(1130,345); x.stroke();
+      x.fillStyle = '#b9d0b4'; x.font = '22px monospace';
+      const lines = [
+        `DISTANCE       ${r.distance.toFixed(2)} KM`,
+        `POWDER CHARGES ${r.charges}`,
+        `BEARING        ${r.bearing}`,
+        `ORDINANCE      ${r.shellCode}`,
+        `TARGET         ${r.target}`
+      ];
+      lines.forEach((line,i) => x.fillText(line,75,405+i*55));
+      x.fillStyle = '#607b65'; x.font = '16px monospace'; x.fillText('TABLE: '+r.band+' // VERIFY BEFORE FIRING',75,750);
+      x.fillStyle = '#536a58'; x.fillText('IRON NEST FIELD EQUIPMENT DIVISION',75,815);
+      const a = document.createElement('a');
+      a.download = `iron-nest-${r.distance.toFixed(2)}km.png`;
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+
+    renderForm();
+  </script>
+</body>
+</html>
