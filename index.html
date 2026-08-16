@@ -2,267 +2,262 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#263d31">
-  <meta name="description" content="Standalone dieselpunk artillery firing calculator for IRON NEST.">
-  <title>IRON NEST // Firing Computer</title>
-  <style>
-    :root{--bg:#101510;--panel:#17221a;--panel2:#1c2b21;--green:#789b7d;--bright:#b9d0b4;--muted:#607b65;--line:#3c5a43;--red:#9e2e2e;--red2:#c33d35;--paper:#d2dbc9;--black:#0b0f0c}
-    *{box-sizing:border-box}
-    html,body,#app{margin:0;min-height:100%;background:var(--bg);color:var(--bright);font-family:"Roboto Mono","Courier New",monospace}
-    body{min-height:100vh}
-    button,input,select{font:inherit}
-    .screen{min-height:100vh;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 20%,#1b2a20 0,#101510 55%);padding:42px 6vw 28px}
-    .scanlines{position:absolute;inset:0;pointer-events:none;opacity:.09;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,#b9d0b4 4px);mix-blend-mode:screen}
-    .masthead,.result-head{position:relative;display:flex;align-items:center;gap:25px;max-width:1100px;margin:0 auto 34px}
-    .crest{border:2px solid var(--green);padding:9px 12px;line-height:.83;font-weight:700;letter-spacing:2px;font-size:22px;box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 5px var(--green)}
-    .crest span{font-size:15px}.eyebrow{font-size:12px;color:var(--muted);letter-spacing:2px}
-    .masthead h1,.result-head h1{font-family:"Share Tech Mono","Courier New",monospace;letter-spacing:5px;margin:3px 0;font-size:38px;color:var(--paper)}
-    .masthead p{font-size:11px;color:var(--muted);margin:0}
-    .status{margin-left:auto;font-size:11px;border:1px solid var(--line);padding:9px 12px;white-space:nowrap}.status i{display:inline-block;width:8px;height:8px;background:#8ba889;border-radius:50%;margin-right:8px;box-shadow:0 0 8px #8ba889}
-    .panel,.data-card{position:relative;max-width:1100px;margin:auto;border:1px solid var(--line);background:rgba(23,34,26,.92);box-shadow:0 16px 50px #0008}
-    .panel-title{font-size:12px;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--line);padding:14px 18px}.panel-title span{color:var(--bright);margin-right:12px}
-    .input-panel{padding-bottom:30px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;padding:30px}.grid label{display:flex;flex-direction:column;gap:9px}.grid label>span{font-size:12px;color:var(--bright);letter-spacing:1px}.grid em{font-style:normal;color:var(--muted);font-size:9px}.grid small{font-size:9px;color:var(--muted);line-height:1.5}
-    .input-wrap{display:flex;border:1px solid var(--line);background:#0d120f}.input-wrap b{padding:16px 14px;color:var(--muted);font-size:13px;border-left:1px solid var(--line)}
-    input,select{width:100%;background:#0d120f;border:1px solid var(--line);color:var(--paper);padding:15px;font:16px "Roboto Mono","Courier New",monospace;outline:none;border-radius:0}.input-wrap input{border:0}.input-wrap:focus-within,select:focus,input:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}select{appearance:auto}
-    .charge-readout{margin:0 30px 26px;border:1px dashed var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;background:#111812}.charge-readout>div{padding:15px 18px;border-right:1px solid var(--line)}.charge-readout>div:last-child{border:0}.charge-readout span{display:block;font-size:9px;color:var(--muted);margin-bottom:7px}.charge-readout strong{font-size:20px}.charge-readout .hint{font-size:9px;color:var(--muted);line-height:1.6}
-    .calculate{display:flex;justify-content:space-between;align-items:center;margin:0 30px;width:calc(100% - 60px);padding:18px 22px;background:linear-gradient(#b43b35,#862622);border:2px solid #d15b51;color:#f1d8cc;font:700 20px "Share Tech Mono","Courier New",monospace;letter-spacing:5px;cursor:pointer;box-shadow:0 6px 0 #4d1716,0 0 25px #9e2e2e55}.calculate:active{transform:translateY(4px);box-shadow:0 2px 0 #4d1716}
-    .error{min-height:20px;margin:12px 30px 0;color:#d86b62;font-size:10px}
-    .screen footer{position:relative;text-align:center;margin-top:30px;color:#415544;font-size:9px;letter-spacing:2px}.screen footer span{margin:0 10px}
-    .result-screen{padding-top:34px}.result-head{margin-bottom:24px}.result-head h1{font-size:32px}
-    .solution-card{position:relative;max-width:900px;margin:15px auto 25px;text-align:center;border:1px solid var(--line);padding:38px 30px;background:linear-gradient(180deg,#1b2a20,#111812);box-shadow:0 20px 70px #0009}.solution-label{font-size:12px;letter-spacing:4px;color:var(--muted)}.angle{font-family:"Share Tech Mono","Courier New",monospace;font-size:130px;line-height:1;color:var(--paper);margin:14px 0;text-shadow:0 0 25px #91ad8b22}.angle small{font-size:24px;color:var(--muted);vertical-align:bottom}.rule{height:1px;background:var(--line);margin:12px 0 16px}.formula{font-size:10px;color:var(--muted);letter-spacing:1px}.formula b{color:var(--bright)}
-    .data-card{max-width:900px}.data-grid{display:grid;grid-template-columns:1fr 1fr;padding:10px 20px 20px}.data-grid>div{padding:18px;border-bottom:1px solid #2c4131}.data-grid span{display:block;font-size:9px;color:var(--muted);margin-bottom:7px}.data-grid strong{font-size:17px;color:var(--paper)}.data-grid small{display:block;color:var(--muted);font-size:9px;margin-top:5px}.data-grid .wide{grid-column:1/-1}
-    .warning{max-width:900px;margin:18px auto 0;border:1px solid #6e4b38;color:#c49a77;background:#2b2119;padding:12px;font-size:10px;text-align:center;letter-spacing:1px}
-    .result-actions{position:absolute;right:6vw;top:30px;z-index:3;display:flex;gap:6px}.result-actions button{background:#17221a;border:1px solid var(--line);color:var(--bright);padding:8px 10px;font:9px "Roboto Mono","Courier New",monospace;cursor:pointer}.result-actions button:hover{background:#24352a}.hidden{display:none}.live{border-color:#527258}.result-screen footer{margin-top:24px}
-    .fade-in{animation:fadeIn .75s ease both}@keyframes fadeIn{from{opacity:0;filter:blur(4px);transform:scale(1.01)}to{opacity:1;filter:none;transform:none}}
-    @media(max-width:700px){.screen{padding:22px 16px 20px}.masthead,.result-head{align-items:flex-start;gap:12px;flex-wrap:wrap}.masthead h1,.result-head h1{font-size:26px;letter-spacing:3px}.status{margin-left:0}.grid,.data-grid{grid-template-columns:1fr;padding:20px}.charge-readout{margin:0 20px 20px;grid-template-columns:1fr 1fr}.charge-readout .hint{grid-column:1/-1;border-top:1px solid var(--line);border-right:0}.calculate{margin:0 20px;width:calc(100% - 40px)}.angle{font-size:75px}.solution-card{padding:30px 15px}.result-actions{right:16px;top:15px;flex-direction:column}.result-head{padding-top:90px}.data-grid .wide{grid-column:auto}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#263d31">
+    <meta name="description" content="Standalone dieselpunk artillery firing calculator for IRON NEST.">
+    <title>IRON NEST // Firing Computer</title>
+    <style>
+        :root{--bg:#101510;--panel:#17221a;--panel2:#1c2b21;--green:#789b7d;--bright:#b9d0b4;--muted:#607b65;--line:#3c5a43;--red:#9e2e2e;--red2:#c33d35;--paper:#d2dbc9;--black:#0b0f0c}
+        *{box-sizing:border-box}
+        html,body,#app{margin:0;min-height:100%;background:var(--bg);color:var(--bright);font-family:"Roboto Mono","Courier New",monospace}
+        body{min-height:100vh}
+        button,input,select{font:inherit}
+        .screen{min-height:100vh;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 20%,#1b2a20 0,#101510 55%);padding:42px 6vw 28px}
+        .scanlines{position:absolute;inset:0;pointer-events:none;opacity:.09;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,#b9d0b4 4px);mix-blend-mode:screen}
+        .masthead,.result-head{position:relative;display:flex;align-items:center;gap:25px;max-width:1100px;margin:0 auto 34px}
+        .crest{border:2px solid var(--green);padding:9px 12px;line-height:.83;font-weight:700;letter-spacing:2px;font-size:22px;box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 5px var(--green)}
+        .crest span{font-size:15px}.eyebrow{font-size:12px;color:var(--muted);letter-spacing:2px}
+        .masthead h1,.result-head h1{font-family:"Share Tech Mono","Courier New",monospace;letter-spacing:5px;margin:3px 0;font-size:38px;color:var(--paper)}
+        .masthead p{font-size:11px;color:var(--muted);margin:0}
+        .status{margin-left:auto;font-size:11px;border:1px solid var(--line);padding:9px 12px;white-space:nowrap}.status i{display:inline-block;width:8px;height:8px;background:#8ba889;border-radius:50%;margin-right:8px;box-shadow:0 0 8px #8ba889}
+        .panel,.data-card{position:relative;max-width:1100px;margin:auto;border:1px solid var(--line);background:rgba(23,34,26,.92);box-shadow:0 16px 50px #0008}
+        .panel-title{font-size:12px;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--line);padding:14px 18px}.panel-title span{color:var(--bright);margin-right:12px}
+        .input-panel{padding-bottom:30px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;padding:30px}.grid label{display:flex;flex-direction:column;gap:9px}.grid label>span{font-size:12px;color:var(--bright);letter-spacing:1px}.grid em{font-style:normal;color:var(--muted);font-size:9px}.grid small{font-size:9px;color:var(--muted);line-height:1.5}
+        .input-wrap{display:flex;border:1px solid var(--line);background:#0d120f}.input-wrap b{padding:16px 14px;color:var(--muted);font-size:13px;border-left:1px solid var(--line)}
+        input,select{width:100%;background:#0d120f;border:1px solid var(--line);color:var(--paper);padding:15px;font:16px "Roboto Mono","Courier New",monospace;outline:none;border-radius:0}.input-wrap input{border:0}.input-wrap:focus-within,select:focus,input:focus{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}select{appearance:auto}
+        .charge-readout{margin:0 30px 26px;border:1px dashed var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;background:#111812}.charge-readout>div{padding:15px 18px;border-right:1px solid var(--line)}.charge-readout>div:last-child{border:0}.charge-readout span{display:block;font-size:9px;color:var(--muted);margin-bottom:7px}.charge-readout strong{font-size:20px}.charge-readout .hint{font-size:9px;color:var(--muted);line-height:1.6}
+        .calculate{display:flex;justify-content:space-between;align-items:center;margin:0 30px;width:calc(100% - 60px);padding:18px 22px;background:linear-gradient(#b43b35,#862622);border:2px solid #d15b51;color:#f1d8cc;font:700 20px "Share Tech Mono","Courier New",monospace;letter-spacing:5px;cursor:pointer;box-shadow:0 6px 0 #4d1716,0 0 25px #9e2e2e55}.calculate:active{transform:translateY(4px);box-shadow:0 2px 0 #4d1716}
+        .error{min-height:20px;margin:12px 30px 0;color:#d86b62;font-size:10px}
+        .screen footer{position:relative;text-align:center;margin-top:30px;color:#415544;font-size:9px;letter-spacing:2px}.screen footer span{margin:0 10px}
+        .result-screen{padding-top:34px}.result-head{margin-bottom:24px}.result-head h1{font-size:32px}
+        .solution-card{position:relative;max-width:900px;margin:15px auto 25px;text-align:center;border:1px solid var(--line);padding:38px 30px;background:linear-gradient(180deg,#1b2a20,#111812);box-shadow:0 20px 70px #0009}.solution-label{font-size:12px;letter-spacing:4px;color:var(--muted)}.angle{font-family:"Share Tech Mono","Courier New",monospace;font-size:130px;line-height:1;color:var(--paper);margin:14px 0;text-shadow:0 0 25px #91ad8b22}.angle small{font-size:24px;color:var(--muted);vertical-align:bottom}.rule{height:1px;background:var(--line);margin:12px 0 16px}.formula{font-size:10px;color:var(--muted);letter-spacing:1px}.formula b{color:var(--bright)}
+        .data-card{max-width:900px}.data-grid{display:grid;grid-template-columns:1fr 1fr;padding:10px 20px 20px}.data-grid>div{padding:18px;border-bottom:1px solid #2c4131}.data-grid span{display:block;font-size:9px;color:var(--muted);margin-bottom:7px}.data-grid strong{font-size:17px;color:var(--paper)}.data-grid small{display:block;color:var(--muted);font-size:9px;margin-top:5px}.data-grid .wide{grid-column:1/-1}
+        .warning{max-width:900px;margin:18px auto 0;border:1px solid #6e4b38;color:#c49a77;background:#2b2119;padding:12px;font-size:10px;text-align:center;letter-spacing:1px}
+        .result-actions{position:absolute;right:6vw;top:30px;z-index:3;display:flex;gap:6px}.result-actions button{background:#17221a;border:1px solid var(--line);color:var(--bright);padding:8px 10px;font:9px "Roboto Mono","Courier New",monospace;cursor:pointer}.result-actions button:hover{background:#24352a}.hidden{display:none}.live{border-color:#527258}.result-screen footer{margin-top:24px}
+        .fade-in{animation:fadeIn .75s ease both}@keyframes fadeIn{from{opacity:0;filter:blur(4px);transform:scale(1.01)}to{opacity:1;filter:none;transform:none}}
+        @media(max-width:700px){.screen{padding:22px 16px 20px}.masthead,.result-head{align-items:flex-start;gap:12px;flex-wrap:wrap}.masthead h1,.result-head h1{font-size:26px;letter-spacing:3px}.status{margin-left:0}.grid,.data-grid{grid-template-columns:1fr;padding:20px}.charge-readout{margin:0 20px 20px;grid-template-columns:1fr 1fr}.charge-readout .hint{grid-column:1/-1;border-top:1px solid var(--line);border-right:0}.calculate{margin:0 20px;width:calc(100% - 40px)}.angle{font-size:75px}.solution-card{padding:30px 15px}.result-actions{right:16px;top:15px;flex-direction:column}.result-head{padding-top:90px}.data-grid .wide{grid-column:auto}}
+
+    /* v2 enhancements */
+    .instrument{position:relative;border:1px solid #527258;background:linear-gradient(145deg,#1b2920,#101610);box-shadow:inset 0 0 0 4px #0a0e0b, inset 0 0 0 6px #314b38, 0 20px 60px #000b;}
+    .instrument:before,.instrument:after{content:"";position:absolute;width:12px;height:12px;border:1px solid #6d856f;background:#18231b;box-shadow:inset 0 0 0 2px #0b100c;}
+    .instrument:before{top:10px;left:10px}.instrument:after{top:10px;right:10px}
+    .knob{width:54px;height:54px;border-radius:50%;border:3px solid #58705d;background:radial-gradient(circle,#405844 0,#202e23 48%,#0b100c 50%,#1d2b21 68%,#0a0e0b 70%);box-shadow:0 3px 8px #000;position:relative}
+    .knob:after{content:"";position:absolute;width:3px;height:15px;background:#b9c9b5;left:50%;top:4px;transform:translateX(-50%);transform-origin:50% 23px;}
+    .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.preset{background:#16221a;border:1px solid #3c5a43;color:#91ad8b;padding:7px 9px;font-size:9px;cursor:pointer}.preset:hover{background:#26382a}.recommend{margin-top:8px;padding:8px;border-left:2px solid #789b7d;background:#111912;color:#90a991;font-size:9px;line-height:1.6}.recommend strong{color:#c5d3c0}.coord-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.coord-grid input{font-size:13px}.settings-panel{margin-top:18px}.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px}.setting{border:1px solid #314a38;background:#101710;padding:12px}.setting label{display:block;color:#607b65;font-size:9px;margin-bottom:7px}.setting select,.setting input[type=range]{padding:9px;font-size:11px}.toggle{display:flex;align-items:center;gap:8px;color:#9db29a;font-size:10px}.toggle input{width:auto}.mode-buttons{display:flex;gap:6px}.mode-buttons button{flex:1;background:#152119;border:1px solid #3c5a43;color:#9eb29b;padding:8px;font-size:9px;cursor:pointer}.mode-buttons button.active{background:#789b7d;color:#0d120f}.blackout .screen>*:not(.scanlines):not(.result-actions){opacity:.72}.blackout .screen{background:#050806}.blackout .angle,.blackout .masthead h1{color:#d6dfd0;text-shadow:0 0 12px #8fa48c}.night{--green:#9c735f;--bright:#cdb4a7;--muted:#7f665c;--line:#60483e;--paper:#e0c6b8;--red:#87342d;--red2:#a84a40}.night .screen{background:radial-gradient(circle at 50% 20%,#261914 0,#100d0c 55%)}
+    .gauge{width:min(420px,85vw);height:min(420px,85vw);border-radius:50%;margin:20px auto 8px;border:8px solid #26382b;background:radial-gradient(circle,#172219 0 58%,#0b100c 59% 64%,#26382b 65% 68%,#0b100c 69%);position:relative;box-shadow:inset 0 0 30px #000,0 0 20px #0008}.gauge .tick{position:absolute;left:50%;top:8px;width:2px;height:18px;background:#9fb49b;transform-origin:50% calc((min(420px,85vw) / 2) - 28px)}
+    .gauge-needle{position:absolute;left:50%;top:50%;width:3px;height:42%;background:#b9c9b5;transform-origin:50% 100%;transform:translate(-50%,-100%) rotate(0deg);box-shadow:0 0 10px #91ad8b}.gauge-center{position:absolute;left:50%;top:50%;width:24px;height:24px;border-radius:50%;background:#718774;border:3px solid #172219;transform:translate(-50%,-50%)}
+    .history-list{display:grid;gap:8px;padding:18px}.history-item{border:1px solid #314a38;background:#101710;padding:10px;display:flex;justify-content:space-between;gap:10px;align-items:center}.history-item span{font-size:9px;color:#607b65}.history-item strong{font-size:11px}.history-item button{background:#1a281e;border:1px solid #3c5a43;color:#a6bba3;padding:7px;font-size:9px}
+    @media(max-width:700px){.coord-grid,.settings-grid{grid-template-columns:1fr}.gauge{width:300px;height:300px}.gauge .tick{transform-origin:50% 137px}.result-actions{max-width:120px}}
+
+    .calibration-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;padding:18px}.calibration-grid label{display:grid;grid-template-columns:80px 1fr;align-items:center;gap:8px;color:#607b65;font-size:9px}.calibration-grid input{padding:8px;font-size:11px}.calibration-actions{padding:0 18px 18px;display:flex;gap:8px}.calibration-actions button{background:#152119;border:1px solid #3c5a43;color:#9eb29b;padding:8px 12px;font-size:9px;cursor:pointer}.calibration-note{padding:0 18px 14px;color:#607b65;font-size:9px;line-height:1.5}
+
+    /* v3 // dieselpunk console treatment */
+    :root{--steel:#18211b;--steel2:#253229;--steel3:#0b100d;--brass:#8f8a61;--brass2:#b8ae78;--glass:#9ab39a;--glow:#8eae8c}
+    body{background:#080b09!important}
+    .screen{background:radial-gradient(ellipse at 50% -10%,#334638 0,#18231c 28%,#090d0a 78%)!important;padding-top:28px}
+    .screen:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 49.7%,#0002 50%,transparent 50.3%),repeating-linear-gradient(0deg,#fff005 0,#fff005 1px,transparent 1px,transparent 6px);opacity:.025}
+    .masthead,.result-head{max-width:1180px;background:linear-gradient(180deg,#26352b,#111812);border:2px solid #526457;padding:15px 18px;box-shadow:inset 0 0 0 3px #0a0e0b, inset 0 0 0 5px #334338,0 12px 30px #000b;margin-bottom:18px}
+    .masthead h1,.result-head h1{font-family:"Courier New",monospace;font-weight:900;text-shadow:0 0 10px #9eb89c33}
+    .eyebrow{color:#7e8e73}.status{border-color:#68735b;background:#0b100d;box-shadow:inset 0 0 10px #000}
+    .panel.instrument,.data-card.instrument,.solution-card.instrument{border:2px solid #56675a;background:linear-gradient(145deg,#26352a,#111711);box-shadow:inset 0 0 0 4px #0a0e0b,inset 0 0 0 6px #344439,0 18px 50px #000c}
+    .panel.instrument:before,.panel.instrument:after,.data-card.instrument:before,.data-card.instrument:after,.solution-card.instrument:before,.solution-card.instrument:after{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#788477,#222c25 45%,#080c09 70%);border:1px solid #849082;box-shadow:0 1px 2px #000}
+    .panel-title{background:linear-gradient(#202c23,#121a15);color:#788975;border-color:#536355;box-shadow:inset 0 -1px #090d0a}
+    .grid{gap:18px;padding:24px}.grid label>span{font-weight:bold;color:#a9b9a3}
+    .input-wrap,input,select{background:#080c09;border-color:#526357;box-shadow:inset 0 0 10px #000b}
+    input,select{color:#cbd6c6}.input-wrap b{background:#151e18;color:#788975}
+    .calculate{border-radius:2px;position:relative;overflow:hidden;background:linear-gradient(#bd3c32,#7d201d);border-color:#dc655a;box-shadow:0 5px 0 #40100e,0 0 24px #a8322a33,inset 0 1px #f18a7d}
+    .calculate:before{content:"";position:absolute;inset:5px;border:1px solid #f4a09733;pointer-events:none}
+    /* Gun selector / rotary switch */
+    .gun-console{display:flex;align-items:center;gap:18px;padding:18px 24px;border-bottom:1px solid #4a5a4e;background:linear-gradient(180deg,#1c2820,#101611)}
+    .gun-console .label{font-size:10px;letter-spacing:2px;color:#82917d;font-weight:bold}
+    .rotary{display:flex;align-items:center;gap:10px}
+    .rotary-body{width:112px;height:72px;border:2px solid #72785f;border-radius:50%;background:radial-gradient(circle,#475342 0 25%,#1b241d 27% 54%,#0a0e0b 56% 100%);box-shadow:inset 0 0 12px #000,0 3px 5px #000;position:relative}
+    .rotary-body:after{content:"";position:absolute;left:50%;top:7px;width:6px;height:29px;background:#b9ad79;border-radius:2px;transform-origin:50% 29px;transform:translateX(-50%) rotate(var(--rotary-angle, -45deg));box-shadow:0 0 3px #000}
+    .rotary-mark{font-size:11px;color:#87917b;display:flex;gap:23px;justify-content:center;margin-top:4px}
+    .rotary-mark b{color:#b8ae78}.rotary-buttons{display:flex;gap:5px}.rotary-buttons button{min-width:38px;height:34px;border:2px solid #606b59;background:#151d17;color:#788975;font-weight:bold;cursor:pointer;box-shadow:inset 0 0 7px #000}.rotary-buttons button.active{background:#7f7a55;color:#0b100d;border-color:#c1b982;box-shadow:0 0 12px #b8ae7844,inset 0 1px #eee2a3}
+    .console-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#59675b;border-top:1px solid #0a0e0b;border-bottom:1px solid #0a0e0b}
+    .console-strip>div{padding:10px 14px;background:#101710;min-height:50px}.console-strip span{display:block;font-size:8px;color:#667664;letter-spacing:1px}.console-strip strong{display:block;margin-top:4px;color:#b9c8b2;font-size:13px}
+    .warning-lamp{display:inline-block;width:9px;height:9px;border-radius:50%;background:#9d342c;box-shadow:0 0 9px #c74439;vertical-align:middle;margin-right:6px}
+    .result-console{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;max-width:1100px;margin:auto}.result-console .solution-card,.result-console .data-card{max-width:none;margin:0}.result-head{max-width:1180px}
+    .solution-card{background:radial-gradient(circle at 50% 35%,#293a2e,#101711 65%)!important}
+    .angle{font-weight:900;letter-spacing:2px;text-shadow:0 0 18px #a5c3a044}.gauge{border-color:#596657;background:radial-gradient(circle,#18241b 0 57%,#070b08 58% 64%,#596657 65% 67%,#090d0a 68%);box-shadow:inset 0 0 35px #000,0 0 18px #000}
+    .gauge:before{content:"ELEVATION";position:absolute;left:50%;top:17%;transform:translateX(-50%);font-size:10px;letter-spacing:3px;color:#758874}.gauge:after{content:"0        30        60        90";position:absolute;left:50%;bottom:13%;transform:translateX(-50%);white-space:pre;font-size:9px;color:#687868}
+    .data-grid strong{color:#cbd7c5}.data-grid>div{border-bottom-color:#39483d}
+    .result-actions button{background:linear-gradient(#28362c,#111811);border-color:#596a5c;box-shadow:inset 0 1px #728271,0 2px 4px #000;color:#b9c8b2}
+    @media(max-width:850px){.result-console{grid-template-columns:1fr}.console-strip{grid-template-columns:1fr 1fr}.gun-console{flex-wrap:wrap}.masthead,.result-head{padding-right:70px}}
+
+    </style>
 </head>
 <body>
-  <div id="app"></div>
-  <script>
-    // IRON NEST FIRING COMPUTER - standalone version.
-    // No build step or external JavaScript is required.
+<div id="app"></div>
+<script>
+    // IRON NEST FIRING COMPUTER v2 - standalone/offline.
     const SHELLS = [
-      ['EMPT','Empty'],['AP','Armour Piercing shell'],['APHE','Armour Piercing High Explosive'],['ATMC','Atomic'],
-      ['CLMN','High Explosive Scattering Bomb Shell'],['CYAN','Cyanogen Gas Bomb Shell'],['DRIL','Concrete Filled Dummy Shell'],
-      ['EQKE','Earthquake Shell'],['FLCH','Flechette Shell'],['HCHE','High Capacity High Explosive Shell'],['HE','High Explosive Shell'],
-      ['INCN','Incendiary Shell'],['LE','Low Grade Low Energy Shell'],['PCLM','Parachute Delayed Cluster Land Mine shells'],
-      ['PHGN','Phosphorus Grenade Shell'],['PRPG','Propaganda Shell'],['SMK','Smoke Shell'],['STAR','Parachute Deployed Illumination shell'],
-      ['TEAR','Chloroacetophenone Gas Shell'],['THRM','Thermal Shell'],['WP','White Phosphorus Shell']
+      ['EMPT','Empty',['Testing']],['AP','Armour Piercing shell',['Underground','Fortification','Armoured']],['APHE','Armour Piercing High Explosive',['Armoured','Fortification','Vehicle']],['ATMC','Atomic',['Area denial','Strategic']],
+      ['CLMN','High Explosive Scattering Bomb Shell',['Infantry','Area target']],['CYAN','Cyanogen Gas Bomb Shell',['Infantry','Open troops']],['DRIL','Concrete Filled Dummy Shell',['Testing']],['EQKE','Earthquake Shell',['Underground','Fortification']],
+      ['FLCH','Flechette Shell',['Infantry','Open troops']],['HCHE','High Capacity High Explosive Shell',['Infantry','Building','Area target']],['HE','High Explosive Shell',['Infantry','Building','General']],['INCN','Incendiary Shell',['Infantry','Building','Flammable']],
+      ['LE','Low Grade Low Energy Shell',['General','Testing']],['PCLM','Parachute Delayed Cluster Land Mine shells',['Area denial']],['PHGN','Phosphorus Grenade Shell',['Infantry','Open troops']],['PRPG','Propaganda Shell',['Psychological']],
+      ['SMK','Smoke Shell',['Screening','Cover']],['STAR','Parachute Deployed Illumination shell',['Scouting','Night']],['TEAR','Chloroacetophenone Gas Shell',['Infantry','Open troops']],['THRM','Thermal Shell',['Building','Fortification','Flammable']],['WP','White Phosphorus Shell',['Infantry','Building','Flammable']]
     ];
+    const TARGET_PRESETS=['Infantry','Armoured','Underground','Fortification','Building','Vehicle','Artillery','Open troops','Area target','Flammable','Scouting','Unknown'];
+    const RECOMMEND={
+      'Infantry':['FLCH','HCHE','HE'],'Armoured':['APHE','AP'],'Underground':['EQKE','AP'],'Fortification':['EQKE','APHE'],'Building':['HCHE','HE','THRM'],'Vehicle':['APHE','AP'],'Artillery':['APHE','HE'],'Open troops':['FLCH','CYAN','PHGN','TEAR'],'Area target':['CLMN','HCHE'],'Flammable':['INCN','THRM','WP'],'Scouting':['STAR'],'Unknown':['HE']
+    };
+    const TABLE=[{start:0,end:5,base:0,slope:12},{start:5,end:10,base:30,slope:6},{start:10,end:15,base:40,slope:4},{start:15,end:20,base:45,slope:3},{start:20,end:25,base:48,slope:2.4},{start:25,end:30,base:50,slope:2}];
+    let lastResult=null, revealTimer=null;
+    let settings=JSON.parse(localStorage.getItem('ironNestSettings')||'{}');
+    settings.distanceUnit=settings.distanceUnit||'km'; settings.angleUnit=settings.angleUnit||'deg'; settings.theme=settings.theme||'green'; settings.brightness=settings.brightness??100; settings.keepAwake=settings.keepAwake!==false;
+    let history=JSON.parse(localStorage.getItem('ironNestHistory')||'[]');
+    const DEFAULT_POINTS=[[0,0],[5,30],[10,40],[15,45],[20,48],[25,50],[30,60]];
+    let calibration=JSON.parse(localStorage.getItem('ironNestCalibration')||JSON.stringify(DEFAULT_POINTS));
+    if(!Array.isArray(calibration)||calibration.length!==7) calibration=DEFAULT_POINTS.map(x=>x.slice());
 
-    let lastResult = null;
-    let revealTimer = null;
-
-    function calculateElevation(distance) {
-      if (!Number.isFinite(distance) || distance < 0 || distance > 30) {
-        throw new Error('Range must be between 0 and 30 km.');
-      }
-      if (distance === 0) return { charges: 1, elevation: 0, band: '0–5 KM' };
-
-      const charges = Math.ceil(distance / 5);
-      const starts = [0, 5, 10, 15, 20, 25];
-      const base   = [0, 30, 40, 45, 48, 50];
-      const slope  = [12, 6, 4, 3, 2.4, 2];
-      const i = Math.min(charges, 6) - 1;
-      const elevation = base[i] + (distance - starts[i]) * slope[i];
-      return { charges, elevation, band: `${starts[i]}–${starts[i] + 5} KM` };
+    function saveSettings(){localStorage.setItem('ironNestSettings',JSON.stringify(settings));}
+    function toKm(v){return settings.distanceUnit==='m'?v/1000:v;}
+    function fromKm(v){return settings.distanceUnit==='m'?v*1000:v;}
+    function fmtDistance(km){return fromKm(km).toFixed(settings.distanceUnit==='m'?0:2)+' '+settings.distanceUnit.toUpperCase();}
+    function degToMils(deg){return deg*6400/360;}
+    function fmtAngle(deg){return settings.angleUnit==='mil'?degToMils(deg).toFixed(0)+' mil':deg.toFixed(2)+'°';}
+    function rawAngle(deg){return settings.angleUnit==='mil'?degToMils(deg).toFixed(0):deg.toFixed(2);}
+    function calculateElevation(distance){
+      if(!Number.isFinite(distance)||distance<0||distance>30) throw new Error('Range must be between 0 and 30 km.');
+      const points=calibration.slice().sort((a,b)=>a[0]-b[0]);
+      if(distance===0)return{charges:1,elevation:points[0][1],band:`${points[0][0]}–${points[1][0]} KM`};
+      let i=points.findIndex((p,idx)=>idx<points.length-1&&distance<=points[idx+1][0]);
+      if(i<0)i=points.length-2;
+      const [x1,y1]=points[i],[x2,y2]=points[i+1];
+      const elevation=y1+(distance-x1)*(y2-y1)/(x2-x1);
+      return {charges:Math.ceil(distance/5),elevation,band:`${x1}–${x2} KM`};
     }
-
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>'"]/g, c => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'
-      }[c]));
+    function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+    function shellOptions(selected='HE'){return SHELLS.map(([c,n])=>`<option value="${c}" ${c===selected?'selected':''}>${c} — ${n}</option>`).join('');}
+    function targetOptions(selected=''){return TARGET_PRESETS.map(t=>`<option value="${escapeHtml(t)}" ${t===selected?'selected':''}>${escapeHtml(t)}</option>`).join('');}
+    function haversine(lat1,lon1,lat2,lon2){const R=6371,r=Math.PI/180,dLat=(lat2-lat1)*r,dLon=(lon2-lon1)*r,a=Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+    function bearingBetween(lat1,lon1,lat2,lon2){const r=Math.PI/180,y=Math.sin((lon2-lon1)*r)*Math.cos(lat2*r),x=Math.cos(lat1*r)*Math.sin(lat2*r)-Math.sin(lat1*r)*Math.cos(lat2*r)*Math.cos((lon2-lon1)*r);return (Math.atan2(y,x)/r+360)%360;}
+    function parseCoords(prefix){const latEl=document.querySelector('#'+prefix+'Lat'),lonEl=document.querySelector('#'+prefix+'Lon');const latRaw=latEl?.value.trim(),lonRaw=lonEl?.value.trim();if(latRaw===''&&lonRaw==='')return null;const lat=Number(latRaw),lon=Number(lonRaw);return latRaw!==''&&lonRaw!==''&&Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null;}
+    function applyTheme(){document.body.classList.toggle('night',settings.theme==='night');document.body.classList.toggle('blackout',settings.theme==='blackout');document.documentElement.style.setProperty('--brightness',settings.brightness/100);}
+    function keepAwake(){if(settings.keepAwake && 'wakeLock' in navigator) navigator.wakeLock.request('screen').then(w=>window._wakeLock=w).catch(()=>{});}
+    function shellRecommendation(target){const codes=RECOMMEND[target]||RECOMMEND.Unknown;return codes.map(c=>`<strong>${c}</strong>`).join(' · ');}
+    function renderForm(prefill={}){
+      clearTimeout(revealTimer); applyTheme();
+      const d=prefill.distance??''; const shell=prefill.shellCode||'HE'; const target=prefill.target||'';
+      document.querySelector('#app').innerHTML=`
+      <main class="screen input-screen"><div class="scanlines"></div>
+      <header class="masthead"><div class="crest">IRON<br><span>NEST</span></div><div><div class="eyebrow">ARTILLERY CONTROL SYSTEM // FIELD MODEL</div><h1>FIRING COMPUTER</h1><p>MARK IV // OFFLINE FIRE CONTROL UNIT</p></div><div class="status"><i></i> SYSTEM READY</div></header>
+      <section class="panel instrument input-panel"><div class="panel-title"><span>00</span> GUN SELECTION</div>
+      <div class="gun-console"><div><div class="label">TWIN GUN BATTERY // SELECTED PIECE</div><div class="rotary"><div class="rotary-body" id="rotaryBody"></div><div class="rotary-mark"><b>L</b><b>R</b></div><div class="rotary-buttons"><button type="button" data-gun="L" class="${(prefill.gunSide||settings.gunSide||'L')==='L'?'active':''}">L</button><button type="button" data-gun="R" class="${(prefill.gunSide||settings.gunSide||'L')==='R'?'active':''}">R</button></div></div></div><div class="console-strip" style="flex:1"><div><span>SELECTED GUN</span><strong id="selectedGun">${prefill.gunSide||settings.gunSide||'L'} GUN</strong></div><div><span>BATTERY</span><strong>DUAL MOUNT</strong></div></div></div>
+      <div class="console-strip"><div><span>UNIT STATUS</span><strong><i class="warning-lamp"></i>READY</strong></div><div><span>FIRE CONTROL</span><strong>OFFLINE</strong></div><div><span>TABLE</span><strong>MARK IV</strong></div><div><span>MAX RANGE</span><strong>30.00 KM</strong></div></div>
+      <div class="panel-title"><span>01</span> TARGET DATA</div>
+      <div class="grid">
+        <label><span>DISTANCE TO TARGET</span><div class="input-wrap"><input id="distance" type="number" min="0" max="${settings.distanceUnit==='m'?30000:30}" step="${settings.distanceUnit==='m'?1:0.01}" value="${d!==''?escapeHtml(settings.distanceUnit==='m'?fromKm(d):d):''}" placeholder="${settings.distanceUnit==='m'?'12310':'12.31'}" inputmode="decimal"><b>${settings.distanceUnit.toUpperCase()}</b></div><small>MAXIMUM EFFECTIVE RANGE // 30.00 KM</small></label>
+        <label><span>BEARING TO TARGET <em>OPTIONAL</em></span><div class="input-wrap"><input id="bearing" type="number" min="0" max="360" step="0.1" value="${prefill.bearing??''}" placeholder="157.4" inputmode="decimal"><b>°</b></div><small>0° — 360° // OR CALCULATE FROM COORDINATES</small></label>
+        <label><span>ORDNANCE TYPE</span><select id="shell">${shellOptions(shell)}</select><div id="recommend" class="recommend">RECOMMENDED: ${shellRecommendation(target)}</div></label>
+        <label><span>TYPE OF TARGET</span><select id="targetPreset"><option value="">CUSTOM / SELECT</option>${targetOptions(target)}</select><input id="target" type="text" maxlength="60" value="${escapeHtml(target)}" placeholder="e.g. armoured bunker" autocomplete="off"><small>TARGET PRESET ALSO PROVIDES SHELL RECOMMENDATIONS</small></label>
+      </div>
+      <div class="panel-title"><span>02</span> POSITION DATA</div>
+      <div class="grid"><label><span>GUN POSITION <em>OPTIONAL</em></span><div class="coord-grid"><input id="gunLat" type="number" min="-90" max="90" step="0.000001" placeholder="LATITUDE"><input id="gunLon" type="number" min="-180" max="180" step="0.000001" placeholder="LONGITUDE"></div><small>LAT −90…90 // LON −180…180</small></label>
+      <label><span>TARGET POSITION <em>OPTIONAL</em></span><div class="coord-grid"><input id="targetLat" type="number" min="-90" max="90" step="0.000001" placeholder="LATITUDE"><input id="targetLon" type="number" min="-180" max="180" step="0.000001" placeholder="LONGITUDE"></div><small>IF BOTH POSITIONS ARE VALID, DISTANCE + BEARING ARE CALCULATED</small></label></div>
+      <div class="charge-readout"><div><span>REQUIRED POWDER CHARGES</span><strong id="charges">—</strong></div><div><span>TABLE BAND</span><strong id="band">—</strong></div><div class="hint">ONE CHARGE / 5 KM<br>ROUND UP // MAX 30 KM</div></div>
+      <button class="calculate" id="calculate" type="button"><span>CALCULATE</span><b>▶</b></button><div class="error" id="error" aria-live="polite"></div></section>
+      <section class="panel settings-panel instrument"><div class="panel-title"><span>03</span> DISPLAY / SYSTEM</div><div class="settings-grid">
+        <div class="setting"><label>DISTANCE UNIT</label><select id="distanceUnit"><option value="km" ${settings.distanceUnit==='km'?'selected':''}>KILOMETRES</option><option value="m" ${settings.distanceUnit==='m'?'selected':''}>METRES</option></select></div>
+        <div class="setting"><label>ANGLE UNIT</label><select id="angleUnit"><option value="deg" ${settings.angleUnit==='deg'?'selected':''}>DEGREES</option><option value="mil" ${settings.angleUnit==='mil'?'selected':''}>MILS (6400)</option></select></div>
+        <div class="setting"><label>DISPLAY MODE</label><div class="mode-buttons"><button data-mode="green" class="${settings.theme==='green'?'active':''}">GREEN</button><button data-mode="night" class="${settings.theme==='night'?'active':''}">NIGHT</button><button data-mode="blackout" class="${settings.theme==='blackout'?'active':''}">BLACKOUT</button></div></div>
+        <div class="setting"><label>SCREEN BRIGHTNESS <span id="brightVal">${settings.brightness}%</span></label><input id="brightness" type="range" min="25" max="100" value="${settings.brightness}"></div>
+        <div class="setting"><label>POWER</label><label class="toggle"><input id="keepAwake" type="checkbox" ${settings.keepAwake?'checked':''}> KEEP SCREEN AWAKE</label></div>
+        <div class="setting"><label>QUICK ACTION</label><button id="repeat" class="preset" type="button" ${history.length?'':'disabled'}>REPEAT LAST SOLUTION</button></div>
+      </div></section>
+      <section class="panel calibration-panel instrument"><div class="panel-title"><span>04</span> FIRING TABLE CALIBRATION</div>
+      <div class="calibration-note">EDIT THE STORED RANGE/ELEVATION REFERENCE POINTS. THE CALCULATOR INTERPOLATES BETWEEN THEM. CHANGES ARE SAVED LOCALLY ON THIS DEVICE.</div>
+      <div class="calibration-grid">${calibration.map((p,i)=>`<label><span>${p[0].toFixed(0)} KM</span><input data-cal="${i}" type="number" step="0.01" value="${p[1]}" aria-label="Elevation at ${p[0]} km"></label>`).join('')}</div>
+      <div class="calibration-actions"><button id="saveCalibration" type="button">SAVE TABLE</button><button id="resetCalibration" type="button">RESTORE DEFAULT</button><button id="fullscreen" type="button">FULLSCREEN</button></div></section>
+      <section class="panel history-panel instrument"><div class="panel-title"><span>06</span> FIRING LOG</div><div class="history-list">${renderHistory()}</div></section>
+      <footer>IRON NEST FIELD EQUIPMENT DIVISION <span>//</span> FIRE CONTROL UNIT</footer></main>`;
+      document.querySelector('.screen').style.filter=`brightness(${settings.brightness/100})`; bindForm(); keepAwake();
     }
-
-    function shellOptions() {
-      return SHELLS.map(([code, full]) => `<option value="${code}">${code} — ${full}</option>`).join('');
-    }
-
-    function renderForm() {
-      clearTimeout(revealTimer);
-      document.querySelector('#app').innerHTML = `
-        <main class="screen input-screen">
-          <div class="scanlines"></div>
-          <header class="masthead">
-            <div class="crest">IRON<br><span>NEST</span></div>
-            <div>
-              <div class="eyebrow">ARTILLERY CONTROL SYSTEM // FIELD MODEL</div>
-              <h1>FIRING COMPUTER</h1>
-              <p>MARK IV — POWDER CHARGE / ELEVATION SOLUTION</p>
-            </div>
-            <div class="status"><i></i> SYSTEM READY</div>
-          </header>
-
-          <section class="panel input-panel">
-            <div class="panel-title"><span>01</span> TARGET DATA</div>
-            <div class="grid">
-              <label>
-                <span>DISTANCE TO TARGET</span>
-                <div class="input-wrap"><input id="distance" type="number" min="0" max="30" step="0.01" placeholder="12.31" inputmode="decimal"><b>KM</b></div>
-                <small>DECIMAL RANGE // 0.00 — 30.00 KM</small>
-              </label>
-              <label>
-                <span>BEARING TO TARGET <em>OPTIONAL</em></span>
-                <div class="input-wrap"><input id="bearing" type="number" min="0" max="360" step="0.1" placeholder="157.4" inputmode="decimal"><b>°</b></div>
-                <small>0° — 360° // DOES NOT AFFECT ELEVATION</small>
-              </label>
-              <label>
-                <span>ORDINANCE TYPE <em>NON-CALCULATING</em></span>
-                <select id="shell">${shellOptions()}</select>
-                <small>SHELL SELECTION HAS NO EFFECT ON TABLE SOLUTION</small>
-              </label>
-              <label>
-                <span>TYPE OF TARGET</span>
-                <input id="target" type="text" maxlength="60" placeholder="e.g. armoured bunker" autocomplete="off">
-                <small>TACTICAL IDENTIFIER // FREE TEXT</small>
-              </label>
-            </div>
-
-            <div class="charge-readout">
-              <div><span>REQUIRED POWDER CHARGES</span><strong id="charges">—</strong></div>
-              <div><span>TABLE BAND</span><strong id="band">—</strong></div>
-              <div class="hint">AUTOMATICALLY SELECTED<br>ONE CHARGE / 5 KM — ROUND UP</div>
-            </div>
-
-            <button class="calculate" id="calculate" type="button"><span>CALCULATE</span><b>▶</b></button>
-            <div class="error" id="error" aria-live="polite"></div>
-          </section>
-          <footer>IRON NEST FIELD EQUIPMENT DIVISION <span>//</span> FIRE CONTROL UNIT</footer>
-        </main>`;
-
-      const distance = document.querySelector('#distance');
-      const charges = document.querySelector('#charges');
-      const band = document.querySelector('#band');
-      distance.addEventListener('input', () => {
-        const d = Number(distance.value);
-        if (Number.isFinite(d) && d >= 0 && d <= 30 && distance.value !== '') {
-          const r = calculateElevation(d);
-          charges.textContent = r.charges;
-          band.textContent = r.band;
-        } else {
-          charges.textContent = '—';
-          band.textContent = '—';
-        }
+    function renderHistory(){if(!history.length)return '<div style="color:#607b65;font-size:9px">NO STORED SOLUTIONS // LOCAL DEVICE STORAGE</div>';return history.slice(0,8).map((r,i)=>`<div class="history-item"><div><strong>${escapeHtml(r.target)}</strong><span>${fmtDistance(r.distance)} // ${fmtAngle(r.elevation)} // ${r.charges} CHG // ${escapeHtml(r.shellCode)}</span></div><button data-history="${i}">LOAD</button></div>`).join('');}
+    function bindForm(){
+      const distance=document.querySelector('#distance'),charges=document.querySelector('#charges'),band=document.querySelector('#band'),target=document.querySelector('#target'),preset=document.querySelector('#targetPreset'),shell=document.querySelector('#shell'),rec=document.querySelector('#recommend');
+      const gunSide=settings.gunSide||'L'; document.querySelectorAll('[data-gun]').forEach(b=>b.addEventListener('click',()=>{settings.gunSide=b.dataset.gun;saveSettings();document.querySelectorAll('[data-gun]').forEach(x=>x.classList.toggle('active',x===b));document.querySelector('#selectedGun').textContent=b.dataset.gun+' GUN';document.querySelector('#rotaryBody').style.setProperty('--rotary-angle',b.dataset.gun==='L'?'-45deg':'45deg');})); document.querySelector('#rotaryBody').style.setProperty('--rotary-angle',gunSide==='L'?'-45deg':'45deg');
+      function updateReadout(){const d=Number(distance.value);const km=toKm(d);if(distance.value!==''&&Number.isFinite(km)&&km>=0&&km<=30){const r=calculateElevation(km);charges.textContent=r.charges;band.textContent=r.band}else{charges.textContent='—';band.textContent='—'}}
+      distance.addEventListener('input',updateReadout); updateReadout();
+      preset.addEventListener('change',()=>{target.value=preset.value;rec.innerHTML='RECOMMENDED: '+shellRecommendation(preset.value)});
+      target.addEventListener('input',()=>{rec.innerHTML='RECOMMENDED: '+shellRecommendation(target.value.trim())});
+      document.querySelector('#calculate').addEventListener('click',calculate);
+      document.querySelector('#repeat')?.addEventListener('click',()=>{if(history[0])renderForm(history[0])});
+      document.querySelectorAll('[data-history]').forEach(b=>b.addEventListener('click',()=>renderForm(history[Number(b.dataset.history)])));
+      document.querySelector('#distanceUnit').addEventListener('change',e=>{settings.distanceUnit=e.target.value;saveSettings();renderForm()});
+      document.querySelector('#angleUnit').addEventListener('change',e=>{settings.angleUnit=e.target.value;saveSettings();renderForm()});
+      document.querySelector('#brightness').addEventListener('input',e=>{settings.brightness=Number(e.target.value);document.querySelector('#brightVal').textContent=settings.brightness+'%';document.querySelector('.screen').style.filter=`brightness(${settings.brightness/100})`;saveSettings()});
+      document.querySelector('#keepAwake').addEventListener('change',e=>{settings.keepAwake=e.target.checked;saveSettings();if(settings.keepAwake)keepAwake()});
+      document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{settings.theme=b.dataset.mode;saveSettings();renderForm()}));
+      document.querySelector('#saveCalibration').addEventListener('click',()=>{
+        const vals=[...document.querySelectorAll('[data-cal]')].map((el,i)=>Number(el.value));
+        if(vals.some(v=>!Number.isFinite(v))){alert('Calibration values must be numbers.');return;}
+        calibration=calibration.map((p,i)=>[p[0],vals[i]]);
+        localStorage.setItem('ironNestCalibration',JSON.stringify(calibration));
+        renderForm();
       });
-      document.querySelector('#calculate').addEventListener('click', calculate);
+      document.querySelector('#resetCalibration').addEventListener('click',()=>{
+        calibration=DEFAULT_POINTS.map(x=>x.slice());localStorage.setItem('ironNestCalibration',JSON.stringify(calibration));renderForm();
+      });
+      document.querySelector('#fullscreen').addEventListener('click',async()=>{
+        try{if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen();}catch(e){}
+      });
     }
-
-    function calculate() {
-      const d = Number(document.querySelector('#distance').value);
-      const error = document.querySelector('#error');
-      if (document.querySelector('#distance').value === '' || !Number.isFinite(d) || d < 0 || d > 30) {
-        error.textContent = 'ERROR // ENTER A DISTANCE BETWEEN 0.00 AND 30.00 KM.';
-        return;
+    function calculate(){
+      const error=document.querySelector('#error');const dInput=document.querySelector('#distance').value;const d=toKm(Number(dInput));
+      if(dInput===''||!Number.isFinite(d)||d<0||d>30){error.textContent='ERROR // ENTER A DISTANCE BETWEEN 0 AND 30 KM.';return;}
+      const gun=parseCoords('gun'),tar=parseCoords('target');let distance=d,bearing=Number(document.querySelector('#bearing').value);
+      if((gun&&!tar)||(!gun&&tar)){error.textContent='ERROR // ENTER BOTH GUN AND TARGET COORDINATES.';return}
+      if(gun&&tar){distance=haversine(gun.lat,gun.lon,tar.lat,tar.lon);bearing=bearingBetween(gun.lat,gun.lon,tar.lat,tar.lon);}
+      if(!Number.isFinite(bearing))bearing=null; if(bearing!==null)bearing=(bearing+360)%360;
+      const shellCode=document.querySelector('#shell').value,shellName=SHELLS.find(s=>s[0]===shellCode)?.[1]||shellCode,target=document.querySelector('#target').value.trim()||'UNSPECIFIED';const r=calculateElevation(distance);
+      lastResult={distance,bearing,shellCode,shellName,target,...r,gun,tar,gunSide:settings.gunSide||'L'};
+      history.unshift(lastResult);history=history.slice(0,20);localStorage.setItem('ironNestHistory',JSON.stringify(history));renderResult(lastResult);
+    }
+    function renderResult(r){
+      clearTimeout(revealTimer);applyTheme();const bearing=r.bearing===null?'—':r.bearing.toFixed(1)+'°';
+      document.querySelector('#app').innerHTML=`<main class="screen result-screen fade-in"><div class="scanlines"></div><div class="result-actions hidden" id="actions"><button id="reset">RESET</button><button id="back">◀ BACK</button><button id="repeatNow">REPEAT</button><button id="save">SAVE IMAGE</button></div>
+      <header class="result-head"><div class="crest">IRON<br><span>NEST</span></div><div><div class="eyebrow">FIRE CONTROL OUTPUT // VERIFIED</div><h1>FIRING SOLUTION</h1><p style="margin:3px 0;color:#7d8e7a;font-size:10px;letter-spacing:2px">GUN ${escapeHtml(r.gunSide||'L')} // TWIN BATTERY</p></div><div class="status live"><i></i> SOLUTION LOCKED</div></header>
+      <section class="solution-card instrument"><div class="solution-label">GUN ELEVATION</div><div class="gauge"><div class="gauge-needle" id="needle"></div><div class="gauge-center"></div></div><div class="angle"><span id="angleValue">0</span><small>${settings.angleUnit==='mil'?'MIL':'DEG'}</small></div><div class="rule"></div><div class="formula">TABLE BAND <b>${escapeHtml(r.band)}</b> // ${r.charges} POWDER CHARGE${r.charges===1?'':'S'}</div></section>
+      <section class="data-card instrument"><div class="panel-title"><span>05</span> FIRING DATA</div><div class="data-grid"><div><span>DISTANCE</span><strong>${fmtDistance(r.distance)}</strong></div><div><span>POWDER CHARGES</span><strong>${r.charges}</strong></div><div><span>BEARING</span><strong>${escapeHtml(bearing)}</strong></div><div><span>GUN</span><strong>${escapeHtml(r.gunSide||'L')} GUN</strong><small>TWIN MOUNT // FIRE CONTROL</small></div><div><span>ORDNANCE</span><strong>${escapeHtml(r.shellCode)}</strong><small>${escapeHtml(r.shellName)}</small></div><div class="wide"><span>TARGET</span><strong>${escapeHtml(r.target)}</strong></div>${r.gun&&r.tar?`<div class="wide"><span>POSITION SOLUTION</span><small>GUN ${r.gun.lat.toFixed(5)}, ${r.gun.lon.toFixed(5)} → TARGET ${r.tar.lat.toFixed(5)}, ${r.tar.lon.toFixed(5)}</small></div>`:''}</div></section>
+      <div class="warning">⚠ VERIFY BEARING, CHARGE COUNT AND TARGET IDENTIFICATION BEFORE FIRING.</div><footer>IRON NEST FIELD EQUIPMENT DIVISION <span>//</span> FIRE CONTROL UNIT</footer></main>`;
+      document.querySelector('.screen').style.filter=`brightness(${settings.brightness/100})`;
+      const angleValue=document.querySelector('#angleValue'),needle=document.querySelector('#needle'),targetAngle=r.elevation,targetMils=degToMils(targetAngle);const start=performance.now(),duration=900;
+      function animate(now){const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,3);angleValue.textContent=settings.angleUnit==='mil'?(targetMils*eased).toFixed(0): (targetAngle*eased).toFixed(2);needle.style.transform=`translate(-50%,-100%) rotate(${targetAngle*1.5*eased-112.5}deg)`;if(t<1)requestAnimationFrame(animate)}requestAnimationFrame(animate);
+      revealTimer=setTimeout(()=>document.querySelector('#actions')?.classList.remove('hidden'),10000);
+      document.querySelector('#reset').onclick=()=>renderForm();document.querySelector('#back').onclick=()=>renderForm(r);document.querySelector('#repeatNow').onclick=()=>renderForm(r);document.querySelector('#save').onclick=saveResultImage;keepAwake();
+    }
+    function saveResultImage(){
+      const r=lastResult;if(!r)return;
+      const scale=2,w=1400,h=980,c=document.createElement('canvas');c.width=w*scale;c.height=h*scale;
+      const x=c.getContext('2d');x.scale(scale,scale);
+      const grad=x.createLinearGradient(0,0,w,h);grad.addColorStop(0,'#26362b');grad.addColorStop(1,'#080c09');x.fillStyle=grad;x.fillRect(0,0,w,h);
+      x.strokeStyle='#657665';x.lineWidth=4;x.strokeRect(24,24,w-48,h-48);x.strokeStyle='#26392c';x.lineWidth=2;x.strokeRect(36,36,w-72,h-72);
+      x.fillStyle='#bdcdb8';x.font='bold 34px monospace';x.fillText('IRON NEST // FIRE CONTROL CONSOLE',70,90);
+      x.fillStyle='#829681';x.font='17px monospace';x.fillText(`TWIN BATTERY // GUN ${r.gunSide||'L'} // SOLUTION VERIFIED`,70,122);
+      x.fillStyle='#dbe6d6';x.font='bold 110px monospace';x.fillText(rawAngle(r.elevation)+(settings.angleUnit==='mil'?' MIL':'°'),70,285);
+      x.fillStyle='#829681';x.font='18px monospace';x.fillText('GUN ELEVATION',76,320);
+      x.strokeStyle='#536756';x.beginPath();x.moveTo(70,350);x.lineTo(1330,350);x.stroke();
+      x.fillStyle='#c1d0bc';x.font='22px monospace';
+      const lines=[`SELECTED GUN   ${r.gunSide||'L'} GUN`,`DISTANCE       ${fmtDistance(r.distance)}`,`POWDER CHARGES ${r.charges}`,`BEARING        ${r.bearing===null?'—':r.bearing.toFixed(1)+'°'}`,`ORDNANCE       ${r.shellCode}`,`TARGET         ${r.target}`];
+      lines.forEach((line,i)=>x.fillText(line,76,410+i*55));
+      x.fillStyle='#708371';x.font='16px monospace';x.fillText('TABLE: '+r.band+' // VERIFY BEFORE FIRING',76,790);x.fillText('IRON NEST FIELD EQUIPMENT DIVISION',76,845);x.fillText(new Date().toLocaleString(),76,875);
+      const dataUrl=c.toDataURL('image/png'); const filename=`iron-nest-${r.gunSide||'L'}-${r.distance.toFixed(2)}km.png`;
+      try{
+        if(window.Android && typeof window.Android.saveImage==='function'){window.Android.saveImage(dataUrl,filename);return;}
+      }catch(e){console.error(e)}
+      try{
+        const a=document.createElement('a');a.download=filename;a.href=dataUrl;document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>alert('IMAGE CREATED. If your browser did not download it automatically, use the browser share/save option.'),250);
+      }catch(e){
+        if(navigator.share){fetch(dataUrl).then(res=>res.blob()).then(blob=>navigator.share({title:'IRON NEST Firing Solution',files:[new File([blob],filename,{type:'image/png'})]})).catch(()=>alert('Unable to save image on this device.'))}
+        else alert('Unable to save image on this device.');
       }
-
-      const bRaw = document.querySelector('#bearing').value;
-      let bearing = '—';
-      if (bRaw !== '') {
-        const b = Number(bRaw);
-        if (!Number.isFinite(b)) {
-          error.textContent = 'ERROR // BEARING MUST BE A NUMBER.';
-          return;
-        }
-        bearing = `${((((b % 360) + 360) % 360).toFixed(1))}°`;
-      }
-
-      const shellCode = document.querySelector('#shell').value;
-      const shellName = SHELLS.find(s => s[0] === shellCode)?.[1] ?? shellCode;
-      const target = document.querySelector('#target').value.trim() || 'UNSPECIFIED';
-      const result = calculateElevation(d);
-      lastResult = { distance:d, bearing, shellCode, shellName, target, ...result };
-      renderResult(lastResult);
     }
-
-    function renderResult(r) {
-      clearTimeout(revealTimer);
-      document.querySelector('#app').innerHTML = `
-        <main class="screen result-screen fade-in">
-          <div class="scanlines"></div>
-          <div class="result-actions hidden" id="actions">
-            <button id="reset" type="button">RESET</button>
-            <button id="back" type="button">◀ BACK</button>
-            <button id="save" type="button">SAVE IMAGE</button>
-          </div>
-          <header class="result-head">
-            <div class="crest">IRON<br><span>NEST</span></div>
-            <div><div class="eyebrow">FIRE CONTROL OUTPUT // VERIFIED</div><h1>FIRING SOLUTION</h1></div>
-            <div class="status live"><i></i> SOLUTION LOCKED</div>
-          </header>
-          <section class="solution-card">
-            <div class="solution-label">GUN ELEVATION</div>
-            <div class="angle"><span id="angleValue">0.00</span><small>DEG</small></div>
-            <div class="rule"></div>
-            <div class="formula">TABLE BAND <b>${escapeHtml(r.band)}</b> // ${r.charges} POWDER CHARGE${r.charges === 1 ? '' : 'S'}</div>
-          </section>
-          <section class="data-card">
-            <div class="panel-title"><span>02</span> FIRING DATA</div>
-            <div class="data-grid">
-              <div><span>DISTANCE</span><strong>${r.distance.toFixed(2)} KM</strong></div>
-              <div><span>POWDER CHARGES</span><strong>${r.charges}</strong></div>
-              <div><span>BEARING</span><strong>${escapeHtml(r.bearing)}</strong></div>
-              <div><span>ORDINANCE</span><strong>${escapeHtml(r.shellCode)}</strong><small>${escapeHtml(r.shellName)}</small></div>
-              <div class="wide"><span>TARGET</span><strong>${escapeHtml(r.target)}</strong></div>
-            </div>
-          </section>
-          <div class="warning">⚠ VERIFY BEARING, CHARGE COUNT AND TARGET IDENTIFICATION BEFORE FIRING.</div>
-          <footer>IRON NEST FIELD EQUIPMENT DIVISION <span>//</span> FIRE CONTROL UNIT</footer>
-        </main>`;
-
-      const angleValue = document.querySelector('#angleValue');
-      const target = r.elevation;
-      const start = performance.now();
-      const duration = 850;
-      function animate(now) {
-        const t = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
-        angleValue.textContent = (target * eased).toFixed(2);
-        if (t < 1) requestAnimationFrame(animate);
-      }
-      requestAnimationFrame(animate);
-
-      revealTimer = setTimeout(() => document.querySelector('#actions')?.classList.remove('hidden'), 10000);
-      document.querySelector('#reset').addEventListener('click', renderForm);
-      document.querySelector('#back').addEventListener('click', renderForm);
-      document.querySelector('#save').addEventListener('click', saveResultImage);
-    }
-
-    function saveResultImage() {
-      const r = lastResult;
-      if (!r) return;
-      const scale = 2, w = 1200, h = 900;
-      const c = document.createElement('canvas');
-      c.width = w * scale; c.height = h * scale;
-      const x = c.getContext('2d');
-      x.scale(scale, scale);
-      x.fillStyle = '#111713'; x.fillRect(0,0,w,h);
-      x.strokeStyle = '#4f735b'; x.lineWidth = 3; x.strokeRect(28,28,w-56,h-56);
-      x.fillStyle = '#b9d0b4'; x.font = 'bold 32px monospace'; x.fillText('IRON NEST // FIRING COMPUTER',70,85);
-      x.fillStyle = '#7eaa88'; x.font = '18px monospace'; x.fillText('FIRING SOLUTION // VERIFIED',70,120);
-      x.fillStyle = '#d8e5d2'; x.font = 'bold 100px monospace'; x.fillText(`${r.elevation.toFixed(2)}°`,70,270);
-      x.fillStyle = '#7eaa88'; x.font = '20px monospace'; x.fillText('GUN ELEVATION',75,310);
-      x.strokeStyle = '#4f735b'; x.beginPath(); x.moveTo(70,345); x.lineTo(1130,345); x.stroke();
-      x.fillStyle = '#b9d0b4'; x.font = '22px monospace';
-      const lines = [
-        `DISTANCE       ${r.distance.toFixed(2)} KM`,
-        `POWDER CHARGES ${r.charges}`,
-        `BEARING        ${r.bearing}`,
-        `ORDINANCE      ${r.shellCode}`,
-        `TARGET         ${r.target}`
-      ];
-      lines.forEach((line,i) => x.fillText(line,75,405+i*55));
-      x.fillStyle = '#607b65'; x.font = '16px monospace'; x.fillText('TABLE: '+r.band+' // VERIFY BEFORE FIRING',75,750);
-      x.fillStyle = '#536a58'; x.fillText('IRON NEST FIELD EQUIPMENT DIVISION',75,815);
-      const a = document.createElement('a');
-      a.download = `iron-nest-${r.distance.toFixed(2)}km.png`;
-      a.href = c.toDataURL('image/png');
-      a.click();
-    }
-
-    renderForm();
-  </script>
+    applyTheme();renderForm();
+</script>
 </body>
 </html>
